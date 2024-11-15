@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/ui/controllers/auth_controller.dart';
-import 'package:task_manager/ui/screens/sign_in_screen.dart';
-import 'package:task_manager/ui/utils/app_colors.dart';
-
+import 'package:get/get.dart';
+import '../controllers/auth_controller.dart';
 import '../screens/profile_screen.dart';
+import '../screens/sign_in_screen.dart';
+import '../utils/app_colors.dart';
 
 class TMAppBar extends StatelessWidget implements PreferredSizeWidget {
   const TMAppBar({
@@ -57,11 +57,14 @@ class TMAppBar extends StatelessWidget implements PreferredSizeWidget {
             IconButton(
               onPressed: () async {
                 await AuthController.clearUserData();
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignInScreen()),
-                      (predicate) => false,
+                Get.snackbar(
+                  'Success',
+                  'Logged Out successful!',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
                 );
+                Get.offAllNamed(SignInScreen.name);
               },
               icon: const Icon(Icons.logout),
             )

@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:task_manager/app.dart';
-import 'package:task_manager/data/models/network_response.dart';
-import 'package:task_manager/ui/controllers/auth_controller.dart';
-import 'package:task_manager/ui/screens/sign_in_screen.dart';
+
+import '../../app.dart';
+import '../../ui/controllers/auth_controller.dart';
+import '../../ui/screens/sign_in_screen.dart';
+import '../models/network_response.dart';
+
 
 class NetworkCaller {
   static Future<NetworkResponse> getRequest({required String url}) async {

@@ -1,4 +1,5 @@
-import 'package:task_manager/data/models/user_model.dart';
+
+import 'user_model.dart';
 
 class LoginModel {
   String? status;

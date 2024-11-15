@@ -1,10 +1,10 @@
+
+
 import 'package:flutter/material.dart';
-import 'package:task_manager/data/models/network_response.dart';
+import 'package:get/get.dart';
+import 'package:task_manager/ui/controllers/forgot_email_controller.dart';
 import 'package:task_manager/ui/screens/forgot_password_otp_screen.dart';
 import 'package:task_manager/ui/widgets/screen_background.dart';
-import 'package:task_manager/ui/widgets/snackbar_message.dart';
-import '../../data/services/network_caller.dart';
-import '../../data/utils/urls.dart';
 
 class ForgotPasswordEmailScreen extends StatefulWidget {
   const ForgotPasswordEmailScreen({Key? key}) : super(key: key);
@@ -19,6 +19,7 @@ class _ForgotPasswordEmailScreenState extends State<ForgotPasswordEmailScreen> {
   final FocusNode _emailFocusNode = FocusNode();
   String? _emailError;
   bool _inProgress = false;
+  final ForgotEmailController forgotEmailController = Get.find<ForgotEmailController>();
 
   @override
   Widget build(BuildContext context) {
@@ -96,30 +97,31 @@ class _ForgotPasswordEmailScreenState extends State<ForgotPasswordEmailScreen> {
   }
 
   Future<void> _sendOtpRequest() async {
-    setState(() {
-      _inProgress = true;
-    });
-
-    String email = _emailTEController.text.trim();
-
-    final NetworkResponse response = await NetworkCaller.getRequest(
-      url: Urls.emailVerify(email),
-    );
-
-    setState(() {
-      _inProgress = false;
-    });
-
-    if (response.isSuccess) {
-      showSnackBarMessage(context,'Email an email 6 digit PinCode');
+    String _email=_emailTEController.text.trim();
+    final bool result= await forgotEmailController.sendOtpRequest(_email);
+    if (result) {
+      Get.snackbar(
+        'Success',
+        'Email an email 6 digit PinCode',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ForgotPasswordOtpScreen(email: email),
+          builder: (context) => ForgotPasswordOtpScreen(email: _email),
         ),
       );
     } else {
-      showSnackBarMessage(context, response.errorMessage, true);
+      String? errorMessage=await ForgotEmailController().errorMessage;
+      Get.snackbar(
+        'Failed',
+        errorMessage!,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 

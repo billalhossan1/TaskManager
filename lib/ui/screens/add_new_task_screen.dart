@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/data/models/network_response.dart';
-import 'package:task_manager/data/services/network_caller.dart';
-import 'package:task_manager/data/utils/urls.dart';
-import 'package:task_manager/ui/widgets/centered_circular_progress_indicator.dart';
-import 'package:task_manager/ui/widgets/tm_app_bar.dart';
-import '../widgets/snackbar_message.dart';
+import 'package:get/get.dart';
+import 'package:task_manager/ui/controllers/add_new_task_controller.dart';
+import '../widgets/centered_circular_progress_indicator.dart';
+import '../widgets/tm_app_bar.dart';
 
 class AddNewTaskScreen extends StatefulWidget {
   const AddNewTaskScreen({super.key});
+
+
 
   @override
   State<AddNewTaskScreen> createState() => _AddNewTaskScreenState();
@@ -15,21 +15,22 @@ class AddNewTaskScreen extends StatefulWidget {
 
 class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   final TextEditingController _titleTEController = TextEditingController();
-  final TextEditingController _descriptionTEController = TextEditingController();
+  final TextEditingController _descriptionTEController =
+      TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool _addNewTaskInProgress = false;
   bool _shouldRefreshPreviousPage = false;
+  final AddNewTaskController controller = Get.find<AddNewTaskController>();
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) {
-        if (didPop) {
-          return;
-        }
-        Navigator.pop(context, _shouldRefreshPreviousPage);
-      },
+    canPop: false,
+    onPopInvoked: (didPop) {
+      if (didPop) {
+        return;
+      }
+      Navigator.pop(context, _shouldRefreshPreviousPage);
+    },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: const TMAppBar(),
@@ -73,13 +74,17 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  Visibility(
-                    visible: !_addNewTaskInProgress,
-                    replacement: const CenteredCircularProgressIndicator(),
-                    child: ElevatedButton(
-                      onPressed: _onTapSubmitButton,
-                      child: const Icon(Icons.arrow_circle_right_outlined),
-                    ),
+                  GetBuilder<AddNewTaskController>(
+                    builder: (context) {
+                      return Visibility(
+                        visible: !context.inProgress,
+                        replacement: const CenteredCircularProgressIndicator(),
+                        child: ElevatedButton(
+                          onPressed: _onTapSubmitButton,
+                          child: const Icon(Icons.arrow_circle_right_outlined),
+                        ),
+                      );
+                    }
                   ),
                 ],
               ),
@@ -91,32 +96,38 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   }
 
   void _onTapSubmitButton() {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState?.validate() ?? false) {
       _addNewTask();
     }
   }
 
+
   Future<void> _addNewTask() async {
-    _addNewTaskInProgress = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {
-      'title': _titleTEController.text.trim(),
-      'description': _descriptionTEController.text.trim(),
-      'status': 'New',
-    };
-
-    final NetworkResponse response = await NetworkCaller.postRequest(
-        url: Urls.addNewTask, body: requestBody);
-
-    _addNewTaskInProgress = false;
-    setState(() {});
-
-    if (response.isSuccess) {
-      _shouldRefreshPreviousPage = true;
-      _clearTextFields();
-      showSnackBarMessage(context, 'New task added!');
-    } else {
-      showSnackBarMessage(context, response.errorMessage, true);
+    final bool result = await controller.addNewTask(
+      _titleTEController.text.trim(),
+      _descriptionTEController.text.trim(),
+    );
+    if(result)
+      {
+        _shouldRefreshPreviousPage=true;
+        _clearTextFields();
+        Get.snackbar(
+          'Success',
+          'New Task Added!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      }else
+    {
+      final errorMessage = controller.errorMessage;
+      Get.snackbar(
+        'Failed',
+        errorMessage ?? 'Login failed. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 

@@ -1,14 +1,14 @@
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:task_manager/ui/screens/reset_password_screen.dart';
-import 'package:task_manager/ui/screens/sign_in_screen.dart';
+import 'package:task_manager/ui/controllers/forgot_otp_controller.dart';
 import 'package:task_manager/ui/utils/app_colors.dart';
 import 'package:task_manager/ui/widgets/screen_background.dart';
-import '../../data/models/network_response.dart';
-import '../../data/services/network_caller.dart';
-import '../../data/utils/urls.dart';
-import '../widgets/snackbar_message.dart';
+
+import 'reset_password_screen.dart';
+import 'sign_in_screen.dart';
 
 class ForgotPasswordOtpScreen extends StatefulWidget {
   const ForgotPasswordOtpScreen({super.key, required this.email});
@@ -20,6 +20,7 @@ class ForgotPasswordOtpScreen extends StatefulWidget {
 class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
   bool _inProgress = false;
   final TextEditingController _pinCodeTEController = TextEditingController();
+  final ForgotOtpController forgotOtpController = Get.find<ForgotOtpController>();
 
 
 
@@ -119,28 +120,32 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
   }
 
   Future<void> _recoverOTPVerify() async {
-    setState(() {
-      _inProgress = true;
-    });
+    String _code=_pinCodeTEController.text.trim();
 
-    String _code = _pinCodeTEController.text.trim().toString();
-    final NetworkResponse response = await NetworkCaller.getRequest(
-      url: Urls.recoverOTPVerify(widget.email, _code),
-    );
+    final bool result= await forgotOtpController.recoverOTPVerify(_code, widget.email);
 
-    setState(() {
-      _inProgress = false;
-    });
-
-    if (response.isSuccess) {
-      showSnackBarMessage(context,'Otp Verified');
+    if (result) {
+      Get.snackbar(
+        'Success',
+        'OTP Verified',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ResetPasswordScreen(email:widget.email,otp:_code)),
 
       );
     } else {
-      showSnackBarMessage(context, response.errorMessage, true);
+      String? errorMessage=await ForgotOtpController().errorMessage;
+      Get.snackbar(
+        'Failed',
+        errorMessage!,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
   @override

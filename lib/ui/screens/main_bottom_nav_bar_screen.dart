@@ -1,12 +1,15 @@
+
+
 import 'package:flutter/material.dart';
+import 'package:task_manager/ui/screens/canelled_task_screen.dart';
 import 'package:task_manager/ui/screens/completed_task_screen.dart';
 import 'package:task_manager/ui/screens/new_task_screen.dart';
 import 'package:task_manager/ui/screens/progress_task_screen.dart';
 import 'package:task_manager/ui/widgets/tm_app_bar.dart';
-import 'canelled_task_screen.dart';
 
 class MainBottomNavBarScreen extends StatefulWidget {
   const MainBottomNavBarScreen({super.key});
+  static const String name='/home';
 
   @override
   State<MainBottomNavBarScreen> createState() => _MainBottomNavBarScreenState();

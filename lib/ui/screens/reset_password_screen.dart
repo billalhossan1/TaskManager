@@ -1,28 +1,28 @@
+
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_manager/ui/controllers/reset_password_controller.dart';
 import 'package:task_manager/ui/screens/sign_in_screen.dart';
 import 'package:task_manager/ui/utils/app_colors.dart';
 import 'package:task_manager/ui/widgets/screen_background.dart';
 
-import '../../data/models/login_model.dart';
-import '../../data/models/network_response.dart';
-import '../../data/services/network_caller.dart';
-import '../../data/utils/urls.dart';
-import '../controllers/auth_controller.dart';
-import '../widgets/snackbar_message.dart';
-
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key, required this.email, required this.otp});
-final String email,otp;
+  const ResetPasswordScreen(
+      {super.key, required this.email, required this.otp});
+  static const String name = '/resetPass';
+  final String email, otp;
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-
-  bool _inProgress =false;
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  ResetPasswordController resetPassController =
+      Get.find<ResetPasswordController>();
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 const SizedBox(height: 82),
                 Text(
                   'Set Password',
-                  style: textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w500),
+                  style: textTheme.displaySmall
+                      ?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -103,9 +104,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   void _onTapNextButton() {
     if (_passwordController.text == _confirmPasswordController.text) {
-
-     _resetPassword();
-
+      _resetPassword();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Passwords do not match')),
@@ -118,33 +117,38 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const SignInScreen()),
-          (_) => false,
+      (_) => false,
     );
   }
+
   Future<void> _resetPassword() async {
-    _inProgress = true;
-    setState(() {});
-    String pass=_passwordController.text.toString();
-
-    Map<String, dynamic> requestBody = {
-      'email' : widget.email,
-      'OTP' : widget.otp,
-      'password' : pass,
-    };
-
-    final NetworkResponse response =
-    await NetworkCaller.postRequest(url: Urls.resetPassword(), body: requestBody);
-    _inProgress = false;
-    setState(() {});
-    if (response.isSuccess) {
-      showSnackBarMessage(context, 'Password Changed Successfully');
+    String pass = _passwordController.text.toString();
+    final result =
+        await resetPassController.resetPassword(widget.email, widget.otp, pass);
+    if (result) {
+      Get.snackbar(
+        'Success',
+        'Password Reset Successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const SignInScreen()),
-            (value) => false,
+        MaterialPageRoute(
+          builder: (context) => SignInScreen(),
+        ),
+        (predicate) => false,
       );
     } else {
-      showSnackBarMessage(context, response.errorMessage, true);
+      final errorMessage = resetPassController.errorMessage;
+      Get.snackbar(
+        'Failed',
+        errorMessage!,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 }

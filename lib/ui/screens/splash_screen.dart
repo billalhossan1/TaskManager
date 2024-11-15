@@ -1,3 +1,5 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:task_manager/ui/controllers/auth_controller.dart';
@@ -8,6 +10,7 @@ import 'package:task_manager/ui/widgets/screen_background.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+   static String name ='/';
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();

@@ -1,4 +1,5 @@
-import 'package:task_manager/data/models/task_status_model.dart';
+
+import 'task_status_model.dart';
 
 class TaskStatusCountModel {
   String? status;
